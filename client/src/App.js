@@ -5,10 +5,25 @@ import { BrowserRouter as Router, Switch, Route, Redirect } from 'react-router-d
 import axios from 'axios'
 import Login from './components/Login'
 import Home from './components/Home'
+import { saveAuthTokens, setAxiosDefaults, removeTokens, userIsLoggedIn } from './util/SessionHeaderUtils'
 class App extends Component {
 
   state = {
     signedIn: false,
+  }
+
+  componentDidMount() {
+    const signedIn = userIsLoggedIn()
+    if (signedIn) {
+      setAxiosDefaults()
+      this.setState({ signedIn })
+    }
+
+  }
+
+  signOut = () => {
+    removeTokens()
+    this.setState({ signedIn: false })
   }
 
 
@@ -22,6 +37,7 @@ class App extends Component {
       const res = await axios.post('/auth/sign_in', payload)
       console.log(res)
       this.setState({ signedIn: true })
+      saveAuthTokens(res.headers)
 
     } catch (error) {
       console.log(error)
@@ -46,6 +62,7 @@ class App extends Component {
           <p>
             REDUX BOG APP
           </p>
+          <button onClick={this.signOut}>Sign Out</button>
 
         </header>
 
